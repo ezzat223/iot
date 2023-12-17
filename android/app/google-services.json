@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "856063124399",
+    "firebase_url": "https://smart-icu-system-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "smart-icu-system",
+    "storage_bucket": "smart-icu-system.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:856063124399:android:c3be49edaabb0b6f71c55a",
+        "android_client_info": {
+          "package_name": "com.example.icu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxa0QNDjLScSGcfOAK5bfGh7CuKU8QZIs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:856063124399:android:1c192f53cd156c7b71c55a",
+        "android_client_info": {
+          "package_name": "com.example.iot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxa0QNDjLScSGcfOAK5bfGh7CuKU8QZIs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
