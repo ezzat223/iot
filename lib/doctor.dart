@@ -1,10 +1,10 @@
-// ignore_for_file: prefer_const_constructors, deprecated_member_use, use_key_in_widget_constructors, use_build_context_synchronously
+// ignore_for_file: prefer_const_constructors, deprecated_member_use, use_key_in_widget_constructors, use_build_context_synchronously, avoid_print
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:icu/login.dart';
+import 'package:icu/pages/signup/login.dart';
 import 'package:oscilloscope/oscilloscope.dart';
 
 class Doctor extends StatefulWidget {
