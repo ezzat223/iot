@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -26,12 +28,22 @@ class _PatientPageState extends State<PatientPage> {
   FirebaseAuth auth = FirebaseAuth.instance; // Firebase Auth instance
   String currentUsername = ''; // Variable to hold current user's username
 
+  Timer? _timer; // Timer to periodically generate trace data
+
   @override
   void initState() {
     super.initState();
     currentUsername = widget.username; // Initialize with passed username
     databaseReference = FirebaseDatabase.instance.ref().child(widget.watchId); // Initialize database reference with watchId
     getCurrentUserInfo(); // Optional: Call this to update username from Firebase
+
+    _timer = Timer.periodic(Duration(milliseconds: 500), _generateTrace);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
   }
 
   // Function to get current user's information
@@ -53,6 +65,14 @@ class _PatientPageState extends State<PatientPage> {
       MaterialPageRoute(builder: (context) => LoginPage()), 
       (route) => false, // Clear all previous routes
     );
+  }
+
+  // Function to generate trace data
+  void _generateTrace(Timer t) {
+    setState(() {
+      // Add logic to update trace data if needed
+      // irValueTraceData.add(someValue);
+    });
   }
 
   Widget buildStreamBuilder() {
