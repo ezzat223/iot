@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:icu/firebase_options.dart';
-import 'package:icu/pages/details/details.dart';
 import 'package:icu/pages/home/home.dart';
 import 'package:icu/pages/signup/login.dart';
 import 'package:icu/pages/signup/signup.dart';
@@ -32,7 +31,6 @@ class _MyAppState extends State<MyApp> {
         '/login': (context) => LoginPage(),
         '/signup': (context) => Register(),
         '/home': (context) => HomePage(username: '', email: ''),
-        '/details': (context) => DetailsPage(),
         '/patient': (context) => PatientPage(username: '', watchId: '',),
       },
       initialRoute: '/',

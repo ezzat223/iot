@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:icu/pages/home/widgets/header.dart';
-import 'package:icu/widgets/bottom_navigation.dart';
 import 'widgets/activity.dart';
 
 class HomePage extends StatelessWidget {
@@ -16,7 +15,6 @@ class HomePage extends StatelessWidget {
         children: [
           AppHeader(username: username),
           RecentActivities(doctorEmail: email),
-          const BottomNavigation(),
         ],
       ),
     );

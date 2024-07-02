@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:icu/pages/patient/patient.dart';
 
 class RecentActivities extends StatelessWidget {
   final String doctorEmail;
@@ -52,6 +53,17 @@ class RecentActivities extends StatelessWidget {
                       onDelete: () {
                         _deletePatient(context, patients[index]);
                       },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PatientPage(
+                              username: patients[index].username,
+                              watchId: patients[index].watchId,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
@@ -64,8 +76,7 @@ class RecentActivities extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               ),
               child: const Text('Add Patient', style: TextStyle(fontSize: 16)),
             ),
@@ -142,9 +153,7 @@ class RecentActivities extends StatelessWidget {
                     if (value!.isEmpty) {
                       return "Email cannot be empty";
                     }
-                    if (!RegExp(
-                        "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
-                        .hasMatch(value)) {
+                    if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]").hasMatch(value)) {
                       return "Please enter a valid email";
                     }
                     return null;
@@ -231,65 +240,69 @@ class RecentActivities extends StatelessWidget {
 class ActivityItem extends StatelessWidget {
   final Patient patient;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   const ActivityItem({
     Key? key,
     required this.patient,
     required this.onDelete,
+    required this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      height: 50,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: const Color(0xffe1e1e1),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5),
+        height: 50,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: const Color(0xffe1e1e1),
+          ),
+          borderRadius: BorderRadius.circular(10),
         ),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xffcff2ff),
-            ),
-            height: 35,
-            width: 35,
-            child: Container(
+        child: Row(
+          children: [
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.all(4),
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage('assets/profile.jpg'),
-                  fit: BoxFit.fill,
+                color: Color(0xffcff2ff),
+              ),
+              height: 35,
+              width: 35,
+              child: Container(
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: AssetImage('assets/profile.jpg'),
+                    fit: BoxFit.fill,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 20),
-          Text(
-            patient.username,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
+            const SizedBox(width: 20),
+            Text(
+              patient.username,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
             ),
-          ),
-          const Expanded(child: SizedBox()),
-          ElevatedButton(
-            onPressed: onDelete,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            const Expanded(child: SizedBox()),
+            ElevatedButton(
+              onPressed: onDelete,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              ),
+              child: const Icon(Icons.delete),
             ),
-            child: const Icon(Icons.delete),
-          ),
-          const SizedBox(width: 20),
-        ],
+            const SizedBox(width: 20),
+          ],
+        ),
       ),
     );
   }
