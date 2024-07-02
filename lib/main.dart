@@ -33,7 +33,7 @@ class _MyAppState extends State<MyApp> {
         '/signup': (context) => Register(),
         '/home': (context) => HomePage(username: '', email: ''),
         '/details': (context) => DetailsPage(),
-        '/patient': (context) => PatientPage(username: '',),
+        '/patient': (context) => PatientPage(username: '', watchId: '',),
       },
       initialRoute: '/',
     );

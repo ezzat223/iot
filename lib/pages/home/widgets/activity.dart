@@ -17,7 +17,7 @@ class RecentActivities extends StatelessWidget {
           children: [
             Text(
               'Patients',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.headline6?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -41,6 +41,7 @@ class RecentActivities extends StatelessWidget {
                       username: doc['username'],
                       email: doc['email'],
                       password: '********', // Masked password for security
+                      watchId: doc['watch_id'] ?? '', // Retrieve watch_id if available
                     );
                   }).toList();
 
@@ -112,6 +113,7 @@ class RecentActivities extends StatelessWidget {
     TextEditingController usernameController = TextEditingController();
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
+    TextEditingController watchIdController = TextEditingController(); 
 
     showDialog(
       context: context,
@@ -163,6 +165,16 @@ class RecentActivities extends StatelessWidget {
                   },
                   obscureText: true,
                 ),
+                TextFormField(
+                  controller: watchIdController,
+                  decoration: const InputDecoration(labelText: 'Watch ID'),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Watch ID cannot be empty";
+                    }
+                    return null;
+                  },
+                ),
               ],
             ),
           ),
@@ -178,8 +190,10 @@ class RecentActivities extends StatelessWidget {
                 String username = usernameController.text.trim();
                 String email = emailController.text.trim();
                 String password = passwordController.text.trim();
+                String watchId = watchIdController.text.trim();
+
                 if (_formKey.currentState!.validate()) {
-                  _addPatient(username, email, password);
+                  _addPatient(username, email, password, watchId);
                   Navigator.of(context).pop(); // Close the dialog
                 }
               },
@@ -191,7 +205,7 @@ class RecentActivities extends StatelessWidget {
     );
   }
 
-  void _addPatient(String username, String email, String password) async {
+  void _addPatient(String username, String email, String password, String watchId) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
@@ -200,11 +214,12 @@ class RecentActivities extends StatelessWidget {
       );
 
       if (userCredential.user != null) {
-        FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
           'username': username,
           'email': email,
           'role': 'Patient',
           'doctorEmail': doctorEmail, // Set the doctorEmail field
+          'watch_id': watchId, // Set the watch_id field
         });
       }
     } catch (e) {
@@ -285,11 +300,13 @@ class Patient {
   final String username;
   final String email;
   final String password;
+  final String watchId; // Include watchId field
 
   Patient({
     required this.uid,
     required this.username,
     required this.email,
     required this.password,
+    required this.watchId,
   });
 }

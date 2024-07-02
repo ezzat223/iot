@@ -31,12 +31,12 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 5, 44, 152),
+      backgroundColor: Colors.teal,
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
             Container(
-              color: const Color.fromARGB(255, 2, 71, 113),
+              color: Colors.teal,
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               child: SingleChildScrollView(
@@ -288,8 +288,8 @@ class _RegisterState extends State<Register> {
       }
 
       try {
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-            email: email, password: password);
+        UserCredential userCredential = await _auth
+            .createUserWithEmailAndPassword(email: email, password: password);
 
         if (userCredential.user != null) {
           postDetailsToFirestore(email, username); // Store username directly
@@ -307,7 +307,8 @@ class _RegisterState extends State<Register> {
   Future<bool> checkUsernameAvailability(String username) async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .where('username', isEqualTo: username.toLowerCase()) // Check for lowercase username
+        .where('username',
+            isEqualTo: username.toLowerCase()) // Check for lowercase username
         .get();
 
     return querySnapshot.docs.isEmpty;

@@ -1,12 +1,9 @@
-// ignore_for_file: unused_field, prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:icu/pages/details/details.dart';
+import 'package:icu/pages/signup/signup.dart';
+import 'package:icu/pages/patient/patient.dart';
 import 'package:icu/pages/home/home.dart';
-import 'package:icu/pages/patient/patient.dart'; // Import the PatientPage
-import 'package:icu/pages/signup/signup.dart'; 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key});
@@ -26,12 +23,12 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 5, 44, 152),
+      backgroundColor: Colors.teal, // Updated background color
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
             Container(
-              color: const Color.fromARGB(255, 2, 71, 113),
+              color: Colors.teal, // Updated container color
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               child: SingleChildScrollView(
@@ -64,7 +61,10 @@ class _LoginPageState extends State<LoginPage> {
                             fillColor: Colors.white,
                             hintText: 'Email',
                             contentPadding: const EdgeInsets.only(
-                                left: 14.0, bottom: 8.0, top: 8.0),
+                              left: 14.0,
+                              bottom: 8.0,
+                              top: 8.0,
+                            ),
                             focusedBorder: OutlineInputBorder(
                               borderSide: const BorderSide(color: Colors.white),
                               borderRadius: BorderRadius.circular(20),
@@ -98,7 +98,10 @@ class _LoginPageState extends State<LoginPage> {
                             fillColor: Colors.white,
                             hintText: 'Password',
                             contentPadding: const EdgeInsets.only(
-                                left: 14.0, bottom: 8.0, top: 15.0),
+                              left: 14.0,
+                              bottom: 8.0,
+                              top: 15.0,
+                            ),
                             focusedBorder: OutlineInputBorder(
                               borderSide: const BorderSide(color: Colors.white),
                               borderRadius: BorderRadius.circular(20),
@@ -124,13 +127,19 @@ class _LoginPageState extends State<LoginPage> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             MaterialButton(
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(20.0))),
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20.0)),
+                              ),
                               elevation: 5.0,
                               height: 40,
                               onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => const Register())); // Navigate to Register page
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const Register(),
+                                  ),
+                                );
                               },
                               color: Colors.white,
                               child: const Text(
@@ -141,9 +150,10 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             MaterialButton(
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(20.0))),
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20.0)),
+                              ),
                               elevation: 5.0,
                               height: 40,
                               onPressed: () {
@@ -201,20 +211,27 @@ class _LoginPageState extends State<LoginPage> {
                       child: CircularProgressIndicator(),
                     );
                   }
-                  if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.exists) {
+                  if (!snapshot.hasData ||
+                      snapshot.data == null ||
+                      !snapshot.data!.exists) {
                     print("No user data found or user does not exist");
                     return const Text('No user data found');
                   }
-                  final userData = snapshot.data!.data() as Map<String, dynamic>;
+                  final userData =
+                      snapshot.data!.data() as Map<String, dynamic>;
                   if (userData.containsKey('role')) {
                     if (userData['role'] == "Doctor") {
                       return HomePage(
                         email: emailController.text,
                         username: userData['username'], // Pass username
                       );
-                    } else if (userData['role'] == "Patient") { // Check for "Patient" role
-                      return DetailsPage(); 
-                      // PatientPage(username: '',)
+                    } else if (userData['role'] == "Patient") {
+                      // Check for "Patient" role
+                      String watchId = userData['watch_id'] ?? '';
+                      return PatientPage(
+                        username: userData['username'],
+                        watchId: watchId,
+                      );
                     } else {
                       print("Invalid role");
                       return const Text('Invalid role');
