@@ -297,8 +297,31 @@ class _RegisterState extends State<Register> {
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => LoginPage()));
         }
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          showProgress = false;
+        });
+        switch (e.code) {
+          case 'weak-password':
+            showErrorMessage("The password provided is too weak.");
+            break;
+          case 'email-already-in-use':
+            showErrorMessage("The account already exists for that email.");
+            break;
+          case 'invalid-email':
+            showErrorMessage("The email address is not valid.");
+            break;
+          case 'operation-not-allowed':
+            showErrorMessage("Operation not allowed. Please contact support.");
+            break;
+          default:
+            showErrorMessage("Registration failed. Please try again.");
+        }
       } catch (e) {
-        showErrorMessage("Registration failed. Please try again.");
+        setState(() {
+          showProgress = false;
+        });
+        showErrorMessage("An unknown error occurred. Please try again.");
         print("Error occurred during registration: $e");
       }
     }

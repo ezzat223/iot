@@ -1,8 +1,10 @@
 import 'dart:async';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:oscilloscope/oscilloscope.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:icu/pages/signup/login.dart';
@@ -11,7 +13,8 @@ class PatientPage extends StatefulWidget {
   final String username;
   final String watchId;
 
-  const PatientPage({Key? key, required this.username, required this.watchId}) : super(key: key);
+  const PatientPage({Key? key, required this.username, required this.watchId})
+      : super(key: key);
 
   @override
   _PatientPageState createState() => _PatientPageState();
@@ -19,59 +22,58 @@ class PatientPage extends StatefulWidget {
 
 class _PatientPageState extends State<PatientPage> {
   List<double> irValueTraceData = [];
-  List<double> spo2TraceData = [0]; // Ensure there is an initial value
-  Map<String, double> spo2DataMap = {"SpO2": 0}; // Initial SpO2 value
-  List<Color> spo2ColorList = [Colors.blue]; // Change SpO2 color to blue
-  int globalCurrentHRValue = 0; // Changed to integer for HR value
+  List<double> spo2TraceData = [0];
+  Map<String, double> spo2DataMap = {"SpO2": 0};
+  List<Color> spo2ColorList = [Colors.blue];
+  int globalCurrentHRValue = 0;
 
   late DatabaseReference databaseReference;
-  FirebaseAuth auth = FirebaseAuth.instance; // Firebase Auth instance
-  String currentUsername = ''; // Variable to hold current user's username
+  FirebaseAuth auth = FirebaseAuth.instance;
+  String currentUsername = '';
+  String? profileImageUrl; // URL to the profile image
 
-  Timer? _timer; // Timer to periodically generate trace data
+  Timer? _timer;
+  final ImagePicker _picker = ImagePicker(); // Image picker instance
 
   @override
   void initState() {
     super.initState();
-    currentUsername = widget.username; // Initialize with passed username
-    databaseReference = FirebaseDatabase.instance.ref().child(widget.watchId); // Initialize database reference with watchId
-    getCurrentUserInfo(); // Optional: Call this to update username from Firebase
+    currentUsername = widget.username;
+    databaseReference = FirebaseDatabase.instance.ref().child(widget.watchId);
+    getCurrentUserInfo();
 
     _timer = Timer.periodic(Duration(milliseconds: 500), _generateTrace);
+
+    _loadProfileImage(); // Load profile image on init
   }
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    _timer?.cancel();
     super.dispose();
   }
 
-  // Function to get current user's information
   void getCurrentUserInfo() {
     User? user = auth.currentUser;
     if (user != null) {
       setState(() {
-        currentUsername = user.displayName ?? ''; // Set username if available
+        currentUsername = user.displayName ?? '';
       });
     }
   }
 
-  // Function to handle logout
   Future<void> _logout() async {
-    await auth.signOut(); // Sign out the user from Firebase
-    print('User logged out');
+    await auth.signOut();
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => LoginPage()), 
-      (route) => false, // Clear all previous routes
+      MaterialPageRoute(builder: (context) => LoginPage()),
+      (route) => false,
     );
   }
 
-  // Function to generate trace data
   void _generateTrace(Timer t) {
     setState(() {
-      // Add logic to update trace data if needed
-      // irValueTraceData.add(someValue);
+      // Update trace data
     });
   }
 
@@ -113,12 +115,12 @@ class _PatientPageState extends State<PatientPage> {
                     children: <Widget>[
                       Text(
                         'Current IR Value',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: 12),
                       ),
                       Text(
                         '${globalCurrentIRValue.toStringAsFixed(2)}',
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 24),
+                            fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                     ],
                   ),
@@ -128,7 +130,7 @@ class _PatientPageState extends State<PatientPage> {
                   child: PieChart(
                     dataMap: {
                       "SpO2": globalCurrentSpo2Value,
-                      "Remaining": 100 - globalCurrentSpo2Value
+                      "": 100 - globalCurrentSpo2Value
                     },
                     colorList: [Colors.blue, Colors.grey],
                     chartRadius: MediaQuery.of(context).size.width / 2.7,
@@ -203,6 +205,59 @@ class _PatientPageState extends State<PatientPage> {
     );
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
+      await _uploadImage(imageFile);
+    }
+  }
+
+  Future<void> _uploadImage(File imageFile) async {
+    try {
+      final storageReference = FirebaseStorage.instance
+          .ref()
+          .child(widget.username)
+          .child('profile.jpg');
+
+      // Check for existing images and delete them
+      final listResult = await storageReference.listAll();
+      for (var item in listResult.items) {
+        await item.delete();
+      }
+
+      // Upload the new image
+      await storageReference.putFile(imageFile);
+
+      // Retrieve the download URL
+      final downloadUrl = await storageReference.getDownloadURL();
+
+      setState(() {
+        profileImageUrl = downloadUrl;
+      });
+    } catch (e) {
+      print('Error uploading image: $e');
+    }
+  }
+
+  Future<void> _loadProfileImage() async {
+    try {
+      final storageReference = FirebaseStorage.instance
+          .ref()
+          .child(widget.username)
+          .child('profile.jpg');
+
+      // Fetch the download URL for the profile image
+      final downloadUrl = await storageReference.getDownloadURL();
+
+      setState(() {
+        profileImageUrl = downloadUrl;
+      });
+    } catch (e) {
+      print('Error loading profile image: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,7 +266,7 @@ class _PatientPageState extends State<PatientPage> {
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'Logout') {
-                _logout(); // Call the logout function
+                _logout();
               }
             },
             itemBuilder: (BuildContext context) {
@@ -238,20 +293,45 @@ class _PatientPageState extends State<PatientPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Welcome',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+              Row(
+                // Use Row instead of Column for "Welcome" and username
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Welcome',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(
+                      width:
+                          10), // Add some space between "Welcome" and the username
+                  Text(
+                    widget.username,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                widget.username,
-                style: const TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                ),
+              SizedBox(height: 20),
+              GestureDetector(
+                onTap: _pickImage,
+                child: profileImageUrl != null
+                    ? CircleAvatar(
+                        radius: 30,
+                        backgroundImage: NetworkImage(profileImageUrl!),
+                      )
+                    : CircleAvatar(
+                        radius: 30,
+                        child: Icon(
+                          Icons.person,
+                          size: 30,
+                        ),
+                      ),
               ),
               SizedBox(height: 20),
               Expanded(child: buildStreamBuilder()),
