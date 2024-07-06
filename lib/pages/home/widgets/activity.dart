@@ -19,8 +19,8 @@ class RecentActivities extends StatelessWidget {
             Text(
               'Patients',
               style: Theme.of(context).textTheme.headline6?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
@@ -51,7 +51,7 @@ class RecentActivities extends StatelessWidget {
                     itemBuilder: (context, index) => ActivityItem(
                       patient: patients[index],
                       onDelete: () {
-                        _deletePatient(context, patients[index]);
+                        _showDeleteConfirmation(context, patients[index]);
                       },
                       onTap: () {
                         Navigator.push(
@@ -124,7 +124,7 @@ class RecentActivities extends StatelessWidget {
     TextEditingController usernameController = TextEditingController();
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
-    TextEditingController watchIdController = TextEditingController(); 
+    TextEditingController watchIdController = TextEditingController();
 
     showDialog(
       context: context,
@@ -277,7 +277,7 @@ class ActivityItem extends StatelessWidget {
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: AssetImage('assets/profile.jpg'),
+                    image: AssetImage('assets/dental.jpg'),
                     fit: BoxFit.fill,
                   ),
                 ),

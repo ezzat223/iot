@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AppHeader extends StatefulWidget {
   final String username;
@@ -127,27 +128,44 @@ class _AppHeaderState extends State<AppHeader> {
       final String fileName = 'profile_image.png';
 
       try {
-        final Reference userDirectory = FirebaseStorage.instance.ref().child('${widget.username}/');
+        final user = FirebaseAuth.instance.currentUser;
+        final String userEmail = user!.email!;
+        final Reference userDirectory = FirebaseStorage.instance.ref().child('$userEmail/');
+
+        // Delete the previous image if it exists
+        final ListResult result = await userDirectory.listAll();
+        for (final Reference ref in result.items) {
+          await ref.delete();
+        }
+
         await userDirectory.child(fileName).putFile(imageFile);
 
         final String url = await userDirectory.child(fileName).getDownloadURL();
         setState(() {
           _profileImageUrl = url;
         });
+
+        print('Profile image uploaded successfully: $url');
       } catch (e) {
         print('Error uploading profile image: $e');
       }
+    } else {
+      print('No image selected.');
     }
   }
 
   Future<void> _loadProfileImage() async {
     try {
-      final Reference userDirectory = FirebaseStorage.instance.ref().child('${widget.username}/');
+      final user = FirebaseAuth.instance.currentUser;
+      final String userEmail = user!.email!;
+      final Reference userDirectory = FirebaseStorage.instance.ref().child('$userEmail/');
       final String fileName = 'profile_image.png';
       final String url = await userDirectory.child(fileName).getDownloadURL();
       setState(() {
         _profileImageUrl = url;
       });
+
+      print('Profile image loaded successfully: $url');
     } catch (e) {
       print('Error loading profile image: $e');
     }
