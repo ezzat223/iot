@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart'; // Add Firebase Storage package
 import 'package:icu/pages/patient/patient.dart';
 
 class RecentActivities extends StatelessWidget {
@@ -42,7 +43,8 @@ class RecentActivities extends StatelessWidget {
                       username: doc['username'],
                       email: doc['email'],
                       password: '********', // Masked password for security
-                      watchId: doc['watch_id'] ?? '', // Retrieve watch_id if available
+                      watchId: doc['watch_id'] ??
+                          '', // Retrieve watch_id if available
                     );
                   }).toList();
 
@@ -76,7 +78,8 @@ class RecentActivities extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               ),
               child: const Text('Add Patient', style: TextStyle(fontSize: 16)),
             ),
@@ -117,7 +120,10 @@ class RecentActivities extends StatelessWidget {
   }
 
   void _deletePatient(BuildContext context, Patient patient) {
-    FirebaseFirestore.instance.collection('users').doc(patient.uid).delete(); // Use UID here
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(patient.uid)
+        .delete(); // Use UID here
   }
 
   void _showAddPatientDialog(BuildContext context) {
@@ -153,7 +159,8 @@ class RecentActivities extends StatelessWidget {
                     if (value!.isEmpty) {
                       return "Email cannot be empty";
                     }
-                    if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]").hasMatch(value)) {
+                    if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
+                        .hasMatch(value)) {
                       return "Please enter a valid email";
                     }
                     return null;
@@ -214,21 +221,26 @@ class RecentActivities extends StatelessWidget {
     );
   }
 
-  void _addPatient(String username, String email, String password, String watchId) async {
+  void _addPatient(
+      String username, String email, String password, String watchId) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       if (userCredential.user != null) {
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
           'username': username,
           'email': email,
           'role': 'Patient',
           'doctorEmail': doctorEmail, // Set the doctorEmail field
           'watch_id': watchId, // Set the watch_id field
+          'profileImageUrl': '', // Initial profile image URL (empty)
         });
       }
     } catch (e) {
@@ -251,60 +263,78 @@ class ActivityItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5),
-        height: 50,
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: const Color(0xffe1e1e1),
-          ),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xffcff2ff),
+    return FutureBuilder<String>(
+      future: _fetchProfileImageUrl(patient.username),
+      builder: (context, snapshot) {
+        String imageUrl = snapshot.data ?? '';
+
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            height: 50,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: const Color(0xffe1e1e1),
               ),
-              height: 35,
-              width: 35,
-              child: Container(
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage('assets/dental.jpg'),
-                    fit: BoxFit.fill,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xffcff2ff),
+                  ),
+                  height: 35,
+                  width: 35,
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundImage: imageUrl.isNotEmpty
+                        ? NetworkImage(imageUrl)
+                        : AssetImage('assets/dental.jpg') as ImageProvider,
                   ),
                 ),
-              ),
+                const SizedBox(width: 20),
+                Text(
+                  patient.username,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const Expanded(child: SizedBox()),
+                ElevatedButton(
+                  onPressed: onDelete,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
+                  ),
+                  child: const Icon(Icons.delete),
+                ),
+                const SizedBox(width: 20),
+              ],
             ),
-            const SizedBox(width: 20),
-            Text(
-              patient.username,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const Expanded(child: SizedBox()),
-            ElevatedButton(
-              onPressed: onDelete,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              ),
-              child: const Icon(Icons.delete),
-            ),
-            const SizedBox(width: 20),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
+  }
+
+  Future<String> _fetchProfileImageUrl(String username) async {
+    try {
+      // Assuming your profile images are stored in a folder named after the username
+      Reference ref =
+          FirebaseStorage.instance.ref().child('$username/profile.jpg');
+      String downloadURL = await ref.getDownloadURL();
+      return downloadURL;
+    } catch (e) {
+      print('Error fetching profile image: $e');
+      return ''; // Return empty string if image not found or error occurs
+    }
   }
 }
 
