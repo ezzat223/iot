@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:oscilloscope/oscilloscope.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:icu/pages/signup/login.dart';
+import 'package:icu/chat_screen.dart';
 
 class PatientPage extends StatefulWidget {
   final String username;
@@ -332,6 +333,21 @@ class _PatientPageState extends State<PatientPage> {
                           size: 30,
                         ),
                       ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(
+                        doctorEmail: auth.currentUser!.email!,
+                        patientUsername: widget.username,
+                      ),
+                    ),
+                  );
+                },
+                child: Text('Chat'),
               ),
               SizedBox(height: 20),
               Expanded(child: buildStreamBuilder()),
